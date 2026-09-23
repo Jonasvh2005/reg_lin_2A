@@ -1,0 +1,59 @@
+---
+title: "TP2"
+format: html
+---
+
+```{r}
+eucalyptus <- read.table("eucalyptus.txt")
+plot(eucalyptus$circ, eucalyptus$ht, xlab = "circ", ylab = "ht")
+```
+
+```{r}
+reg <- lm(ht ~ circ, eucalyptus)
+summary(reg)
+#b1 = 9.037
+#b2 = 0.257
+```
+```{r}
+b2_hat <- cov(eucalyptus$ht, eucalyptus$circ)/var(eucalyptus$circ)
+b1_hat <- mean(eucalyptus$ht) - b2_hat * mean(eucalyptus$circ)
+```
+
+```{r}
+confint(reg)
+```
+
+```{r}
+vcov(reg)
+```
+
+```{r}
+plot(eucalyptus$circ, eucalyptus$ht, xlab = "circ", ylab = "ht")
+abline(reg)
+res <- predict(reg, interval = 'confidence')
+lines(sort(eucalyptus$circ), sort(res[,2]), col = 2)
+lines(sort(eucalyptus$circ), sort(res[,3]), col = 2)
+#estimation pas très bonne car beaucoup de points hors de l'intervalle de confiance
+```
+
+```{r}
+dt <- data.frame(circ = c(50, 100, 150, 200))
+predict(reg, dt, interval = 'prediction')
+```
+
+```{r}
+plot(eucalyptus$circ, eucalyptus$ht, xlab = "circ", ylab = "ht")
+abline(reg)
+res <- predict(reg, interval = 'confidence')
+lines(sort(eucalyptus$circ), sort(res[,2]), col = 2)
+lines(sort(eucalyptus$circ), sort(res[,3]), col = 2)
+res.pred <- predict(reg, interval = 'prediction')
+lines(sort(eucalyptus$circ), sort(res.pred[,2]), col = 'blue')
+lines(sort(eucalyptus$circ), sort(res.pred[,3]), col = 'blue')
+# On ne peut pas faire approximation gaussienne dans la prévision si les epsilon pas gaussiens
+```
+
+```{r}
+hist(residuals(reg))
+qqnorm(residuals(reg))
+```
