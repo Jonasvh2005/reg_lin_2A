@@ -1,0 +1,163 @@
+---
+title: "TP4"
+format: html
+---
+
+```{r}
+tab = read.table("ozone.txt")
+head(tab, 10)
+#il y a des NA
+```
+
+```{r}
+tableau <- tab[,2:11]
+plot(tableau)
+```
+
+```{r}
+plot(maxO3 ~., data=tableau)
+```
+
+```{r}
+cor(tableau, use="pairwise.complete.obs")
+```
+
+```{r}
+reg = lm(maxO3~., data=tableau)
+summary(reg)
+```
+
+```{r}
+library(car)
+vif(reg)
+```
+
+```{r}
+corr = cor(tableau, use="pairwise.complete.obs")[, "maxO3"]
+corr
+
+#Exclure maxO3 elle même
+corr <- corr[names(corr) != "maxO3"]
+
+#Classement par correlation absolue
+sort(abs(corr), decreasing = TRUE)
+```
+
+```{r}
+reg2 = lm(maxO3~T12+Ne12+Vx9, data = tableau)
+summary(reg2)
+```
+
+```{r}
+anova(reg2, reg)
+```
+
+Ici, la pvalue=0.3593; on ne rejette pas l'hypothèse nulle. Donc le modèle 1 est préférable c'est à dire les autres variables n'apportent pas d'information en plus
+
+```{r}
+library(leaps)
+temp = regsubsets(maxO3~., data = tableau, nvmax=9)
+```
+
+```{r}
+plot(temp)
+```
+
+```{r}
+library(leaps)
+reg3 = lm(maxO3~T12 + Ne9 + Vx9, data=tableau)
+summary(reg3)
+```
+
+```{r}
+BIC(reg)
+BIC(reg2)
+BIC(reg3)
+```
+
+```{r}
+AIC(reg)
+AIC(reg2)
+AIC(reg3)
+```
+
+```{r}
+anova(reg, reg3)
+#en faveur du modele 3
+```
+
+```{r}
+step(reg) #backward sur AIC
+# step(reg, direction = "backward")
+```
+Avec AIC en backward, on a T9, T12, Ne9, Vx9
+
+```{r}
+step(reg, direction = "both")
+```
+
+```{r}
+n = nrow(na.omit(tab)) #il faut prendre n = nb de ligne SANS NA
+
+step(reg, k=log(n)) #backward avec BIC
+```
+
+```{r}
+min.model = lm(maxO3~1, data = tableau)
+
+biggest = formula(reg)
+
+step(min.model, direction = "forward", scope = biggest) #forward AIC
+```
+
+```{r}
+step(min.model, direction = "both", scope = biggest, k = log(n)) #forward hybrid BIC
+```
+
+```{r}
+plot(temp,scale="Cp")
+```
+
+```{r}
+plot(reg3)
+```
+
+```{r}
+library(lmtest)
+dwtest(reg3)
+
+bgtest(reg3)
+```
+
+```{r}
+tableau$maxO3v=c(NA, tableau$maxO3[-122])
+```
+
+```{r}
+plot(tableau$maxO3v, tableau$maxO3)
+```
+
+```{r}
+cor(tableau$maxO3, tableau$maxO3v, use="pairwise.complete.obs")
+```
+
+```{r}
+reg4 = lm(maxO3~T12+Ne9+maxO3v+Vx9, data = tableau)
+summary(reg4)
+```
+
+```{r}
+plot(reg4)
+bptest(reg4)
+bgtest(reg4)
+dwtest(reg4)
+```
+Le Ra² a fait un bond de 0.75 environ. L'ajout de maxO3v a eu un impact significatif.
+
+```{r}
+
+```
+
+```{r}
+
+```
